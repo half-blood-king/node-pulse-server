@@ -1,0 +1,16 @@
+{
+  "name": "node-pulse-server",
+  "version": "1.0.0",
+  "description": "Zero-dependency Node.js server that streams its own vital signs over SSE and shows why worker_threads keep the event loop free.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT"
+}
