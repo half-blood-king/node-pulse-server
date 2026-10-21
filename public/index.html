@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pulse · Node vitals</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1><span class="heart">♥</span> Pulse</h1>
+          <p id="host" class="muted">connecting…</p>
+        </div>
+        <span id="status" class="pill">connecting</span>
+      </header>
+
+      <section class="tiles">
+        <div class="tile"><span>CPU avg</span><b id="k-cpu">–</b></div>
+        <div class="tile"><span>Loop delay p99</span><b id="k-loop">–</b></div>
+        <div class="tile"><span>Loop utilisation</span><b id="k-elu">–</b></div>
+        <div class="tile"><span>Heap used</span><b id="k-heap">–</b></div>
+        <div class="tile"><span>Requests/s</span><b id="k-rps">–</b></div>
+        <div class="tile"><span>Workers busy</span><b id="k-pool">–</b></div>
+      </section>
+
+      <section class="grid">
+        <article class="card wide">
+          <div class="card-head">
+            <h2>Event loop delay</h2>
+            <div class="legend"><i style="--c: #f472b6"></i>max <i style="--c: #38bdf8"></i>p99 <i style="--c: #34d399"></i>p50</div>
+          </div>
+          <canvas id="c-loop"></canvas>
+          <p class="muted small">
+            How late timers fire. A healthy Node process stays near the 10 ms sampling resolution. Click
+            <em>Block the event loop</em> and watch it spike, then run the same work on workers and watch it stay flat.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><h2>CPU per core</h2></div>
+          <div id="cores" class="cores"></div>
+          <canvas id="c-cpu" class="short"></canvas>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>Memory</h2>
+            <div class="legend"><i style="--c: #a78bfa"></i>rss <i style="--c: #fbbf24"></i>heap used</div>
+          </div>
+          <canvas id="c-mem" class="short"></canvas>
+          <p id="mem-text" class="muted small"></p>
+        </article>
+
+        <article class="card wide lab">
+          <div class="card-head"><h2>Experiments</h2></div>
+          <div class="controls">
+            <label>
+              Work per job: count primes below <b id="limit-label">2,000,000</b>
+              <input id="limit" type="range" min="500000" max="5000000" step="250000" value="2000000" />
+            </label>
+            <label>
+              Jobs <b id="jobs-label">4</b>
+              <input id="jobs" type="range" min="1" max="8" value="4" />
+            </label>
+          </div>
+          <div class="buttons">
+            <button id="run-worker" class="primary">Run on worker pool</button>
+            <button id="run-block" class="danger">Block the event loop</button>
+            <button id="burst">Fire 60 requests (rate limit)</button>
+            <a id="csv" class="button" href="/api/report.csv?rows=250000">Stream 250k-row CSV</a>
+          </div>
+          <ol id="jobs-log" class="log"></ol>
+        </article>
+      </section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
