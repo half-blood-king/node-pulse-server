@@ -68,6 +68,27 @@ describe('HTTP server', () => {
     assert.equal(typeof data.loop.p99, 'number');
   });
 
+  it('exposes Prometheus metrics', async () => {
+    // The sampler runs every 100 ms in tests; wait until at least one sample exists.
+    let res;
+    for (let i = 0; i < 20; i++) {
+      res = await fetch(`${base}/metrics`);
+      if (res.status === 200) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get('content-type'), /text\/plain; version=0\.0\.4/);
+    const text = await res.text();
+    assert.match(text, /^# TYPE pulse_cpu_usage_percent gauge$/m);
+    assert.match(text, /^pulse_cpu_usage_percent\{core="0"\} \d+$/m);
+    assert.match(text, /^pulse_event_loop_delay_ms\{quantile="0\.99"\} [\d.]+$/m);
+    assert.match(text, /^pulse_worker_pool\{state="size"\} 2$/m);
+    // Every non-comment line must be `name{labels} value`.
+    for (const line of text.trim().split('\n').filter((l) => !l.startsWith('#'))) {
+      assert.match(line, /^[a-z_]+(\{[^}]*\})? -?[\d.]+$/, line);
+    }
+  });
+
   it('rate limits bursts on /api', async () => {
     const codes = await Promise.all(
       Array.from({ length: 45 }, () => fetch(`${base}/api/report.csv?rows=1`).then(async (r) => (await r.text(), r.status))),

@@ -8,6 +8,7 @@ import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 import { createGzip } from 'node:zlib';
 import { createMetrics } from './metrics.js';
+import { toPrometheus } from './prometheus.js';
 import { createRateLimiter } from './rate-limit.js';
 import { Router, sendJson } from './router.js';
 import { createSseHub } from './sse.js';
@@ -67,6 +68,18 @@ export function createApp({ sampleMs = 1000, poolSize = Math.max(2, Math.min(4, 
   router.get('/health', ({ res }) =>
     sendJson(res, 200, { status: 'ok', uptime: process.uptime(), clients: hub.size, pool: pool.stats() }),
   );
+
+  // Serves the latest sample rather than taking a new one, so scrapes don't reset the dashboard's intervals.
+  router.get('/metrics', ({ res }) => {
+    const point = history.at(-1);
+    if (!point) return sendJson(res, 503, { error: 'No sample yet' }, { 'Retry-After': 1 });
+    const body = toPrometheus(point, metrics.static());
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; version=0.0.4; charset=utf-8',
+      'Content-Length': Buffer.byteLength(body),
+    });
+    res.end(body);
+  });
 
   router.get('/events', ({ req, res }) => {
     hub.connect(req, res, [

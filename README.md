@@ -22,6 +22,7 @@ Press **Run on worker pool**: the same work is spread across a `worker_threads` 
 | **Streaming with backpressure**: a 2M-row CSV generated lazily by an async generator, piped through gzip with `stream/promises.pipeline` at constant memory | `src/app.js` (`/api/report.csv`) |
 | **Token-bucket rate limiter** with `Retry-After` and `X-RateLimit-*` headers | `src/rate-limit.js` |
 | **Static files** with weak ETags, `304 Not Modified` and path-traversal protection | `src/app.js` |
+| **Prometheus `/metrics` endpoint** in the text exposition format, ready to scrape | `src/prometheus.js` |
 | **Graceful shutdown** on SIGINT/SIGTERM: closes SSE streams, terminates workers, drains the server | `src/server.js` |
 | **Tests with the built-in runner** (`node:test`), including a real server on an ephemeral port | `test/` |
 
@@ -44,4 +45,5 @@ npm test
 | GET | `/events` | SSE stream: `info`, `history`, `metrics` (1/s), `job` |
 | POST | `/api/work?mode=worker\|block&jobs=4&limit=2000000` | Run CPU work and return timings |
 | GET | `/api/report.csv?rows=250000` | Streamed (and gzipped) CSV |
+| GET | `/metrics` | Prometheus text format (CPU per core, loop delay, memory, pool, clients) |
 | GET | `/health` | Liveness and pool stats |
